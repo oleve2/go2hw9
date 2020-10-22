@@ -15,27 +15,6 @@ import (
 	"github.com/wool/go2hw9/pkg/card"
 )
 
-func initCard() *card.Card {
-	card1 := &card.Card{ID: 1, Type: "Master", BankName: "Citi", CardNumber: "1111 2222 3333 4444", Balance: 20_000_00, CardDueDate: "2030-01-01",
-		Transactions: []*card.Transaction{
-			&card.Transaction{ID: 1, TranType: "purchase", OwnerID: 2, TranSum: 1735_55, TranDate: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "5411", Status: "done Супермаркеты"},
-			&card.Transaction{ID: 2, TranType: "purchase", OwnerID: 2, TranSum: 2000_00, TranDate: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "5411", Status: "done"},
-			&card.Transaction{ID: 3, TranType: "purchase", OwnerID: 2, TranSum: 1203_91, TranDate: time.Date(2020, 2, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "5411", Status: "done Рестораны"},
-			&card.Transaction{ID: 4, TranType: "purchase", OwnerID: 2, TranSum: 3562_21, TranDate: time.Date(2020, 2, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "1111", Status: ""},
-			&card.Transaction{ID: 5, TranType: "purchase", OwnerID: 2, TranSum: 1111_11, TranDate: time.Date(2020, 3, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "1111", Status: ""},
-			&card.Transaction{ID: 6, TranType: "purchase", OwnerID: 2, TranSum: 2222_22, TranDate: time.Date(2020, 3, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "1111", Status: ""},
-			&card.Transaction{ID: 7, TranType: "purchase", OwnerID: 2, TranSum: 6666_66, TranDate: time.Date(2020, 4, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "3333", Status: ""},
-			&card.Transaction{ID: 8, TranType: "purchase", OwnerID: 2, TranSum: 4444_44, TranDate: time.Date(2020, 4, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "3333", Status: ""},
-			&card.Transaction{ID: 9, TranType: "purchase", OwnerID: 2, TranSum: 5555_55, TranDate: time.Date(2020, 5, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "5555", Status: ""},
-			&card.Transaction{ID: 10, TranType: "purchase", OwnerID: 2, TranSum: 3333_33, TranDate: time.Date(2020, 5, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "5411", Status: ""},
-			&card.Transaction{ID: 11, TranType: "purchase", OwnerID: 2, TranSum: 3333_33, TranDate: time.Date(2020, 5, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "5555", Status: ""},
-			&card.Transaction{ID: 12, TranType: "purchase", OwnerID: 2, TranSum: 3333_33, TranDate: time.Date(2020, 5, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "5555", Status: ""},
-			&card.Transaction{ID: 13, TranType: "purchase", OwnerID: 2, TranSum: 3333_33, TranDate: time.Date(2020, 5, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "5411", Status: ""},
-		},
-	}
-	return card1
-}
-
 //
 func main() {
 	if err := execute(); err != nil {
@@ -137,8 +116,11 @@ func writeIndex(writer io.Writer) error {
 // Выгрузка csv
 func writeOperations(writer io.Writer) error {
 	// TODO: Generate CSV
-	page := []byte("xxxx,0001,0002,1592373247\nxxxx,0001,0002,1592373247\nxxxx,0001,0002,1592373247\nxxxx,0001,0002,1592373247\n")
-	//c1 := initCard()
+	c1 := card.InitCard()
+	page, err := card.MakeCSV(c1.Transactions)
+	if err != nil {
+		log.Println(err)
+	}
 
 	return writeResponse(writer, 200, []string{
 		"Content-Type: text/csv",
@@ -149,8 +131,11 @@ func writeOperations(writer io.Writer) error {
 
 // writeOperationsJSON - экспорт json
 func writeOperationsJSON(writer io.Writer) error {
-	c1 := initCard()
-	v, _ := card.MakeJSON(c1.Transactions)
+	c1 := card.InitCard()
+	v, err := card.MakeJSON(c1.Transactions)
+	if err != nil {
+		log.Println(err)
+	}
 	page := []byte(v)
 
 	return writeResponse(writer, 200, []string{
@@ -162,8 +147,11 @@ func writeOperationsJSON(writer io.Writer) error {
 
 // экспорт xml
 func writeOperationsXML(writer io.Writer) error {
-	c1 := initCard()
-	v, _ := card.MakeXML(c1.Transactions)
+	c1 := card.InitCard()
+	v, err := card.MakeXML(c1.Transactions)
+	if err != nil {
+		log.Println(err)
+	}
 	page := []byte(v)
 
 	return writeResponse(writer, 200, []string{
@@ -188,12 +176,7 @@ func write404(writer io.Writer) error {
 }
 
 //
-func writeResponse(
-	writer io.Writer,
-	status int,
-	headers []string,
-	content []byte,
-) error {
+func writeResponse(writer io.Writer, status int, headers []string, content []byte) error {
 	const CRLF = "\r\n"
 	var err error
 

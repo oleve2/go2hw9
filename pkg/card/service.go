@@ -1,6 +1,7 @@
 package card
 
 import (
+	"bytes"
 	"encoding/csv"
 	"encoding/json"
 	"encoding/xml"
@@ -533,13 +534,12 @@ func ImportXML(importPath string) ([]*Transaction, error) {
 }
 
 // MakeCSV - HW9 - make csv
-/*
-func MakeCSV(tr []*Transaction) []byte {
+func MakeCSV(tr []*Transaction) ([]byte, error) {
 	if len(tr) == 0 {
-		return nil
+		return nil, fmt.Errorf("transaction slice is empty")
 	}
-	tot := make([]string, 0)
-	//records := make([][]string, 0)
+	buf := &bytes.Buffer{} // делать через буфер
+	w := csv.NewWriter(buf)
 	for _, v := range tr {
 		record := []string{
 			strconv.FormatInt(v.ID, 10),
@@ -550,13 +550,13 @@ func MakeCSV(tr []*Transaction) []byte {
 			v.Status,
 			strconv.FormatInt(v.OwnerID, 10),
 		}
-		tmp1 := strings.Join(record[:], ",")
-		tmp1 = append(tmp1, "\n")
-		//records = append(records, record)
+		if err := w.Write(record); err != nil {
+			return nil, err
+		}
 	}
-
-	return []byte(records)
-}*/
+	w.Flush()
+	return buf.Bytes(), nil
+}
 
 // MakeJSON -
 func MakeJSON(tr []*Transaction) ([]byte, error) {
@@ -584,4 +584,26 @@ func MakeXML(tr []*Transaction) ([]byte, error) {
 	}
 	encData = append([]byte(xml.Header), encData...)
 	return encData, nil
+}
+
+// InitCard - go2hw9 - для инициализации карты с транзакциями (для жкспорта из webapp)
+func InitCard() *Card {
+	card1 := &Card{ID: 1, Type: "Master", BankName: "Citi", CardNumber: "1111 2222 3333 4444", Balance: 20_000_00, CardDueDate: "2030-01-01",
+		Transactions: []*Transaction{
+			&Transaction{ID: 1, TranType: "purchase", OwnerID: 2, TranSum: 1735_55, TranDate: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "5411", Status: "done Супермаркеты"},
+			&Transaction{ID: 2, TranType: "purchase", OwnerID: 2, TranSum: 2000_00, TranDate: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "5411", Status: "done"},
+			&Transaction{ID: 3, TranType: "purchase", OwnerID: 2, TranSum: 1203_91, TranDate: time.Date(2020, 2, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "5411", Status: "done Рестораны"},
+			&Transaction{ID: 4, TranType: "purchase", OwnerID: 2, TranSum: 3562_21, TranDate: time.Date(2020, 2, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "1111", Status: ""},
+			&Transaction{ID: 5, TranType: "purchase", OwnerID: 2, TranSum: 1111_11, TranDate: time.Date(2020, 3, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "1111", Status: ""},
+			&Transaction{ID: 6, TranType: "purchase", OwnerID: 2, TranSum: 2222_22, TranDate: time.Date(2020, 3, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "1111", Status: ""},
+			&Transaction{ID: 7, TranType: "purchase", OwnerID: 2, TranSum: 6666_66, TranDate: time.Date(2020, 4, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "3333", Status: ""},
+			&Transaction{ID: 8, TranType: "purchase", OwnerID: 2, TranSum: 4444_44, TranDate: time.Date(2020, 4, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "3333", Status: ""},
+			&Transaction{ID: 9, TranType: "purchase", OwnerID: 2, TranSum: 5555_55, TranDate: time.Date(2020, 5, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "5555", Status: ""},
+			&Transaction{ID: 10, TranType: "purchase", OwnerID: 2, TranSum: 3333_33, TranDate: time.Date(2020, 5, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "5411", Status: ""},
+			&Transaction{ID: 11, TranType: "purchase", OwnerID: 2, TranSum: 3333_33, TranDate: time.Date(2020, 5, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "5555", Status: ""},
+			&Transaction{ID: 12, TranType: "purchase", OwnerID: 2, TranSum: 3333_33, TranDate: time.Date(2020, 5, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "5555", Status: ""},
+			&Transaction{ID: 13, TranType: "purchase", OwnerID: 2, TranSum: 3333_33, TranDate: time.Date(2020, 5, 1, 0, 0, 0, 0, time.Local).Unix(), MccCode: "5411", Status: ""},
+		},
+	}
+	return card1
 }
